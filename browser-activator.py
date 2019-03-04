@@ -1,6 +1,7 @@
 import subprocess
 import time
 import os.path
+import sys
 
 def executeCommand(cmd):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
@@ -22,18 +23,17 @@ def isSaveCompleted(firefoxPid):
     return os.path.isfile(filename)
 
 def getTitleUpdaterJSCode():
-    return '''
-    t = setInterval(function() {
-      document.title = document.getElementsByClassName('_item--item-selected--3LMMf')[0].children[0].title;
-    }, 100);
-    '''
+    return '''t = setInterval(function() {document.title = document.getElementsByClassName('_item--item-selected--3LMMf')[0].children[0].title;}, 100);'''
 
 def init(firefoxPid):
-    subprocess.call('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "ctrl+shift+i"', shell=True)
+    executeCommand('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "ctrl+shift+i"')
     time.sleep(3)
-    subprocess.call('xdotool windowactivate --sync ' + str(firefoxPid) + ' type "' + getTitleUpdaterJSCode() + '"', shell=True)
-    subprocess.call('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "Return"', shell=True)
-    abc
+    print('xdotool windowactivate --sync ' + str(firefoxPid) + ' type "' + getTitleUpdaterJSCode() + '"')
+    executeCommand('xdotool windowactivate --sync ' + str(firefoxPid) + ' type "' + getTitleUpdaterJSCode() + '"')
+    executeCommand('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "Return"')
+    time.sleep(3)
+    executeCommand('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "ctrl+shift+i"')
+    time.sleep(3)
 
 def perform():    
     firefoxPid = executeCommand('xdotool search --name "Mozilla Firefox"').strip()
@@ -41,21 +41,22 @@ def perform():
     init(firefoxPid)
     inProgress = False
     while(True):
-        if inProgress:
+        if inProgress:            
+            print("Saving in progress")
             if isSaveCompleted(firefoxPid):
 	        print("File saved")
 	        inProgress = False
             else:
                 time.sleep(1)
         else:
-            subprocess.call('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "ctrl+s"', shell=True)
+            print("Beginning Save")
+            time.sleep(5)
+            executeCommand('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "ctrl+s"')
             time.sleep(1)
-	    subprocess.call('save_as=$(xdotool search --name "Save As") && xdotool windowactivate $save_as key --clearmodifiers "Return"', shell=True)
+	    executeCommand('save_as=$(xdotool search --name "Save As") && xdotool windowactivate $save_as key --clearmodifiers "Return"')
 	    time.sleep(2)
             inProgress = True
 
 if __name__ == '__main__':
-    key = raw_input("Enter value")
-    print("Input string = ", key)
-    if key == 'n':
-        perform()
+    key = raw_input("Press Enter Key to begin")
+    perform()
