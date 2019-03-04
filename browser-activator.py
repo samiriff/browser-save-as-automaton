@@ -21,9 +21,24 @@ def isSaveCompleted(firefoxPid):
     filename = getFileName(firefoxPid, '.html')
     return os.path.isfile(filename)
 
+def getTitleUpdaterJSCode():
+    return '''
+    t = setInterval(function() {
+      document.title = document.getElementsByClassName('_item--item-selected--3LMMf')[0].children[0].title;
+    }, 100);
+    '''
+
+def init(firefoxPid):
+    subprocess.call('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "ctrl+shift+i"', shell=True)
+    time.sleep(3)
+    subprocess.call('xdotool windowactivate --sync ' + str(firefoxPid) + ' type "' + getTitleUpdaterJSCode() + '"', shell=True)
+    subprocess.call('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "Return"', shell=True)
+    abc
+
 def perform():    
     firefoxPid = executeCommand('xdotool search --name "Mozilla Firefox"').strip()
     print(firefoxPid)
+    init(firefoxPid)
     inProgress = False
     while(True):
         if inProgress:
@@ -33,7 +48,6 @@ def perform():
             else:
                 time.sleep(1)
         else:
-   	    print('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "ctrl+s"')
             subprocess.call('xdotool windowactivate ' + str(firefoxPid) + ' key --clearmodifiers "ctrl+s"', shell=True)
             time.sleep(1)
 	    subprocess.call('save_as=$(xdotool search --name "Save As") && xdotool windowactivate $save_as key --clearmodifiers "Return"', shell=True)
