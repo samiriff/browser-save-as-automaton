@@ -9,7 +9,9 @@ class BrowserActivator:
         self.firefoxPid = self.executeCommand('xdotool search --name "Mozilla Firefox"').strip()
 
     def executeCommand(self, cmd):
+        print("Executing: ", cmd)
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        p.wait()
         stdout, stderr = p.communicate()
         return stdout
 
@@ -30,15 +32,24 @@ class BrowserActivator:
     def getTitleUpdaterJSCode(self):
         return '''t = setInterval(function() {document.title = document.getElementsByClassName('_item--item-selected--3LMMf')[0].children[0].title;}, 100);'''
 
+    def getTriggerNextPageJSCode(self):
+        return '''jQuery(window).keypress(function (e) { var keyCode = e.which; console.log(e, keyCode, e.which); if (keyCode == 110) { console.log('You pressed N!'); document.getElementsByClassName('_main--footer-container--3vC-_')[0].children[0].click(); }}); '''
+
+    def getJSCode(self):
+        return self.getTitleUpdaterJSCode() + ";" + self.getTriggerNextPageJSCode()
+
     def init(self):
         self.executeCommand('xdotool windowactivate ' + str(self.firefoxPid) + ' key --clearmodifiers "ctrl+shift+i"')
         time.sleep(3)
-        print('xdotool windowactivate --sync ' + str(self.firefoxPid) + ' type "' + self.getTitleUpdaterJSCode() + '"')
-        self.executeCommand('xdotool windowactivate --sync ' + str(self.firefoxPid) + ' type "' + self.getTitleUpdaterJSCode() + '"')
+        print('xdotool windowactivate --sync ' + str(self.firefoxPid) + ' type "' + self.getJSCode() + '"')
+        self.executeCommand('xdotool windowactivate --sync ' + str(self.firefoxPid) + ' type "' + self.getJSCode() + '"')
         self.executeCommand('xdotool windowactivate ' + str(self.firefoxPid) + ' key --clearmodifiers "Return"')
-        time.sleep(3)
+        time.sleep(5)
         self.executeCommand('xdotool windowactivate ' + str(self.firefoxPid) + ' key --clearmodifiers "ctrl+shift+i"')
         time.sleep(3)
+
+    def triggerNextPage(self):
+        self.executeCommand('xdotool windowactivate ' + str(self.firefoxPid) + ' key --clearmodifiers "n"')
 
     def perform(self):
         print(self.firefoxPid)
@@ -49,6 +60,7 @@ class BrowserActivator:
                 print("Saving in progress")
                 if self.isSaveCompleted():
                     print("File saved")
+                    self.triggerNextPage()
                     inProgress = False
                 else:
                     time.sleep(1)
