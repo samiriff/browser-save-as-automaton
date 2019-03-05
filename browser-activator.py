@@ -17,7 +17,8 @@ class BrowserActivator:
 
     def getFileName(self, fileExtension):
         filename = self.executeCommand('xdotool getwindowname ' + str(self.firefoxPid)).strip()
-        filename = filename.split('-')[0].strip() + fileExtension
+        filename = '-'.join(filename.split('-')[:-1]).strip() + fileExtension
+        filename = filename.replace('/', '_')
         print(filename)
         return filename
 
@@ -27,6 +28,7 @@ class BrowserActivator:
 
     def isSaveCompleted(self):
         filename = self.getFileName('.html')
+        print("Checking if exists: ", (self.contentPath + filename))
         return os.path.isfile(self.contentPath + filename)
 
     def getTitleUpdaterJSCode(self):
@@ -39,6 +41,8 @@ class BrowserActivator:
         return self.getTitleUpdaterJSCode() + ";" + self.getTriggerNextPageJSCode()
 
     def init(self):
+        if raw_input("Initialize JS Scripts? (y/n): ") == 'n':
+            return
         self.executeCommand('xdotool windowactivate ' + str(self.firefoxPid) + ' key --clearmodifiers "ctrl+shift+i"')
         time.sleep(3)
         print('xdotool windowactivate --sync ' + str(self.firefoxPid) + ' type "' + self.getJSCode() + '"')
@@ -61,6 +65,7 @@ class BrowserActivator:
                 if self.isSaveCompleted():
                     print("File saved")
                     self.triggerNextPage()
+                    time.sleep(3)
                     inProgress = False
                 else:
                     time.sleep(1)
@@ -75,5 +80,6 @@ class BrowserActivator:
 
 if __name__ == '__main__':
     key = raw_input("Press Enter Key to begin")
-    browserActivator = BrowserActivator('../Content/')
+    contentPath = sys.argv[1] + '/' # ../Content
+    browserActivator = BrowserActivator(contentPath)
     browserActivator.perform()
