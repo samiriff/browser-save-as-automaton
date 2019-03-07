@@ -17,7 +17,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Usage
 
- 1. Login to website you wish to save in your web browser of choice - BROWSER
+ 1. Login to the website you wish to save in your web browser of choice - BROWSER
  
  2. Navigate to the first page of the collection of pages you wish to save. Ensure that this page contains a "Next" button for navigation
  
